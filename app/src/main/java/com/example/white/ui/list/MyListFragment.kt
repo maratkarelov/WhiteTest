@@ -2,6 +2,7 @@ package com.example.white.ui.list
 
 import android.content.Intent
 import android.widget.Toast
+import androidx.core.view.isVisible
 import com.example.white.R
 import com.example.white.core.BaseFragment
 import com.example.white.core.Failure
@@ -24,13 +25,16 @@ class MyListFragment : BaseFragment(), ItemClickCallback<MyCharacter> {
         myCharactersAdapter = MyCharactersAdapter(this)
         rv.adapter = myCharactersAdapter
         swipe.setOnRefreshListener {
-            viewModel.refresh()
+            progressBar.isVisible = true
+            viewModel.refreshFromRemote()
             swipe.isRefreshing = false
         }
     }
 
     override fun observeViewModel() {
+        progressBar.isVisible = true
         viewModel.liveData.observe(viewLifecycleOwner) {
+            progressBar.isVisible = false
             myCharactersAdapter.addItems(it)
         }
         viewModel.failure.observe(viewLifecycleOwner) {
