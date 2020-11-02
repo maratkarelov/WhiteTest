@@ -12,7 +12,7 @@ interface CharacterDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun storeList(data: List<MyCharacter>)
 
-    @Query("select * from characters")
+    @Query("select * from characters order by char_id")
     fun getAllLive(): LiveData<List<MyCharacter>>
 
 }

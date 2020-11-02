@@ -1,8 +1,10 @@
 package com.example.white.ui.list
 
 import android.content.Intent
+import android.widget.Toast
 import com.example.white.R
 import com.example.white.core.BaseFragment
+import com.example.white.core.Failure
 import com.example.white.core.ItemClickCallback
 import com.example.white.data.entities.MyCharacter
 import com.example.white.ui.adapters.MyCharactersAdapter
@@ -11,7 +13,7 @@ import kotlinx.android.synthetic.main.list_fragment.*
 import org.koin.android.ext.android.inject
 
 class MyListFragment : BaseFragment(), ItemClickCallback<MyCharacter> {
-    private val listViewModel: ListViewModel by inject()
+    private val viewModel: ListViewModel by inject()
     private lateinit var myCharactersAdapter: MyCharactersAdapter
 
     override fun layoutId(): Int {
@@ -22,19 +24,31 @@ class MyListFragment : BaseFragment(), ItemClickCallback<MyCharacter> {
         myCharactersAdapter = MyCharactersAdapter(this)
         rv.adapter = myCharactersAdapter
         swipe.setOnRefreshListener {
-            listViewModel.refresh()
+            viewModel.refresh()
             swipe.isRefreshing = false
         }
     }
 
     override fun observeViewModel() {
-        listViewModel.liveData.observe(viewLifecycleOwner){
+        viewModel.liveData.observe(viewLifecycleOwner) {
             myCharactersAdapter.addItems(it)
+        }
+        viewModel.failure.observe(viewLifecycleOwner) {
+            if (it is Failure.UnknownError) {
+                Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), getString(R.string.no_internet_connection), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     override fun OnItemClick(item: MyCharacter, position: Int) {
-        startActivity(Intent(requireContext(), DetailActivity::class.java).putExtra(DetailActivity.URL, item.img))
+        startActivity(
+            Intent(
+                requireContext(),
+                DetailActivity::class.java
+            ).putExtra(DetailActivity.URL, item.img)
+        )
 
     }
 
